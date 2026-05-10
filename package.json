@@ -1,0 +1,26 @@
+{
+    "name": "@nyahub/jsonsafe",
+    "version": "1.0.0",
+    "description": "JSON wrapper with BigInt support",
+    "main": "./dist/json.js",
+    "types": "./dist/json.d.ts",
+    "files": [
+        "dist"
+    ],
+    "publishConfig": {
+        "access": "public"
+    },
+    "devDependencies": {
+        "@types/node": "^20.19.40",
+        "tsx": "^4.0.0",
+        "typescript": "^5.0.0"
+    },
+    "engines": {
+        "node": ">=18.0.0"
+    },
+    "scripts": {
+        "build": "tsc"
+    },
+    "author": "",
+    "license": "LGPL-2.1-only"
+}
