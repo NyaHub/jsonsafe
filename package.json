@@ -4,6 +4,17 @@
     "description": "JSON wrapper with BigInt support",
     "main": "./dist/json.js",
     "types": "./dist/json.d.ts",
+    "keywords": [
+        "json",
+        "bigint",
+        "parse",
+        "stringify",
+        "safe",
+        "fast",
+        "native",
+        "wrapper",
+        "precision"
+    ],
     "files": [
         "dist"
     ],
