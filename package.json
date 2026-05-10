@@ -22,5 +22,6 @@
         "build": "tsc"
     },
     "author": "",
-    "license": "LGPL-2.1-only"
+    "license": "LGPL-2.1-only",
+    "repository": "https://github.com/NyaHub/jsonsafe"
 }
