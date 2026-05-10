@@ -20,11 +20,10 @@ export const JSONSafe = {
     parse(text: string, reviver?: JSONRepRevFN) {
         const fixedJson = text.replace(/(?<!")\b(-?\d{15,})\b(?!")/g, '"$1"');
         return JSON.parse(fixedJson, function (key, value) {
-            value = reviver ? reviver.call(this, key, value) : value
             if (typeof value === 'string' && /^-?\d{15,}$/.test(value)) {
-                return BigInt(value);
+                value = BigInt(value);
             }
-            return value;
+            return reviver ? reviver.call(this, key, value) : value;
         });
     },
     /**
