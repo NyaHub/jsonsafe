@@ -30,6 +30,7 @@ test('Fuzz-test', async (t) => {
         assert.equal(parsed.val, Number(numStr));
       }
 
+      JSONSafe.useRaw = false
       const stringified = JSONSafe.stringify(parsed);
       assert.ok(stringified.replace(/\s/g, '').includes(isLong ? `"val":"${numStr}"` : `"val":${numStr}`));
     });
@@ -90,7 +91,7 @@ test('MDN (Native JSON.parse behavior)', async (t) => {
     assert.ok(!Object.prototype.hasOwnProperty.call(result, 'b'));
   });
 
-  await t.test('Корректная обработка пустых структур', () => {
+  await t.test('Empty structs', () => {
     assert.deepEqual(JSONSafe.parse('{}'), {});
     assert.deepEqual(JSONSafe.parse('[]'), []);
     assert.strictEqual(JSONSafe.parse('null'), null);
@@ -98,7 +99,7 @@ test('MDN (Native JSON.parse behavior)', async (t) => {
     assert.strictEqual(JSONSafe.parse('false'), false);
   });
 
-  await t.test('Выбрасывание SyntaxError при кривом JSON', () => {
+  await t.test('Throwing SyntaxError', () => {
     assert.throws(() => JSONSafe.parse('{"invalid": json}'), SyntaxError);
     assert.throws(() => JSONSafe.parse(''), SyntaxError);
   });

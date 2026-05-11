@@ -6,10 +6,35 @@
  * the Free Software Foundation...
  */
 
-type JSONRepRevFN = (this: any, key: string, value: any) => any
+type JSONRepRevFN = (this: any, key: string, value: any, context?: { source?: string }) => any
 type JSONReplacer = (number | string)[] | null | JSONRepRevFN
 
-export const JSONSafe = {
+interface IJSONSafe {
+    parse(text: string, reviver?: JSONRepRevFN): any;
+    stringify(value: any, replacer?: JSONReplacer, space?: string | number): string;
+    readonly nativeRaw: boolean;
+    readonly nativeCTX: boolean;
+    useRaw: boolean;
+}
+
+// @ts-ignore
+const HAS_RAW = typeof JSON.rawJSON === 'function'
+const HAS_CTX = (() => {
+    try {
+        let supported = false;
+        // @ts-ignore
+        JSON.parse('1', (_k, _v, context) => {
+            supported = !!(context && 'source' in context);
+        });
+        return supported;
+    } catch {
+        return false;
+    }
+})();
+
+let useRaw = HAS_RAW
+
+export const JSONSafe: IJSONSafe = {
     /**
      * Converts a JavaScript Object Notation (JSON) string into an object.
      * 
@@ -18,12 +43,16 @@ export const JSONSafe = {
      * @throws {SyntaxError} If text is not valid JSON.
      */
     parse(text: string, reviver?: JSONRepRevFN) {
-        const fixedJson = text.replace(/(?<!")\b(-?\d{15,})\b(?!")/g, '"$1"');
-        return JSON.parse(fixedJson, function (key, value) {
+        const fixedJson = HAS_CTX ? text : text.replace(/(?<!")\b(-?\d{15,})\b(?!")/g, '"$1"');
+        // @ts-ignore
+        return JSON.parse(fixedJson, function (key, value, ctx) {
+            if (HAS_CTX && typeof value === 'number' && ctx?.source?.length >= 15) {
+                value = BigInt(ctx.source);
+            }
             if (typeof value === 'string' && /^-?\d{15,}$/.test(value)) {
                 value = BigInt(value);
             }
-            return reviver ? reviver.call(this, key, value) : value;
+            return reviver ? reviver.call(this, key, value, ctx) : value;
         });
     },
     /**
@@ -35,7 +64,8 @@ export const JSONSafe = {
      * @throws {TypeError} If a circular reference or a BigInt value is found.
      */
     stringify(value: any, replacer?: JSONReplacer, space?: string | number) {
-        const checkBN = (value) => typeof value === "bigint" ? value.toString() : value
+        // @ts-ignore
+        const checkBN = (value) => typeof value === "bigint" ? (useRaw ? JSON.rawJSON(value) : value.toString()) : value
 
         if (typeof replacer === 'function') {
             return JSON.stringify(value, function (key: string, value: any) {
@@ -50,10 +80,31 @@ export const JSONSafe = {
                 return checkBN(value)
             }, space)
         }
-        return JSON.stringify(value, function (key: string, value: any) {
+        return JSON.stringify(value, function (_key: string, value: any) {
             return checkBN(value)
         }, space)
     }
-}
+} as IJSONSafe
+Object.defineProperty(JSONSafe, "nativeRaw", {
+    writable: false,
+    enumerable: true,
+    value: HAS_RAW
+})
+
+Object.defineProperty(JSONSafe, "nativeCTX", {
+    writable: false,
+    enumerable: true,
+    value: HAS_CTX
+})
+
+Object.defineProperty(JSONSafe, "useRaw", {
+    enumerable: true,
+    get() {
+        return useRaw
+    },
+    set(v: boolean) {
+        useRaw = HAS_RAW && v
+    }
+})
 
 export default JSONSafe
