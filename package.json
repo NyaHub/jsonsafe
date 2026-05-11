@@ -1,6 +1,6 @@
 {
     "name": "@nyahub/jsonsafe",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "description": "JSON wrapper with BigInt support",
     "main": "./dist/json.js",
     "types": "./dist/json.d.ts",
