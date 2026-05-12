@@ -6,12 +6,17 @@
  * the Free Software Foundation...
  */
 
-type JSONRepRevFN = (this: any, key: string, value: any, context?: { source?: string }) => any
-type JSONReplacer = (number | string)[] | null | JSONRepRevFN
+export type JSONReviver = (this: any, key: string, value: any, context?: {
+    source?: string;
+}) => any;
+export type JSONReplacerFn = (this: any, key: string, value: any) => any;
+export type JSONReplacerBase = (number | string)[] | null
+export type JSONReplacer = JSONReplacerBase | JSONReplacerFn;
 
 interface IJSONSafe {
-    parse(text: string, reviver?: JSONRepRevFN): any;
-    stringify(value: any, replacer?: JSONReplacer, space?: string | number): string;
+    parse(text: string, reviver?: JSONReviver): any;
+    stringify(value: any, replacer?: JSONReplacerFn, space?: string | number): string;
+    stringify(value: any, replacer?: JSONReplacerBase, space?: string | number): string;
     readonly nativeRaw: boolean;
     readonly nativeCTX: boolean;
     useRaw: boolean;
@@ -42,7 +47,7 @@ export const JSONSafe: IJSONSafe = {
      * @param reviver A function that transforms the results. This function is called for each member of the object. If a member contains nested objects, the nested objects are transformed before the parent object is.
      * @throws {SyntaxError} If text is not valid JSON.
      */
-    parse(text: string, reviver?: JSONRepRevFN) {
+    parse(text: string, reviver?: JSONReviver) {
         const fixedJson = HAS_CTX ? text : text.replace(/(?<!")\b(-?\d{15,})\b(?!")/g, '"$1"');
         // @ts-ignore
         return JSON.parse(fixedJson, function (key, value, ctx) {
